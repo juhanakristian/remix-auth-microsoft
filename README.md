@@ -22,7 +22,7 @@ Be sure to copy the client secret, Redirect URI and the Application (client) ID 
 ### Create the strategy instance
 
 ```ts
-import { MicrosoftStrategy } from "remix-auth";
+import { MicrosoftStrategy } from "remix-auth-microsoft";
 
 let microsoftStrategy = new MicrosoftStrategy(
   {
@@ -30,7 +30,7 @@ let microsoftStrategy = new MicrosoftStrategy(
     clientSecret: "YOUR_CLIENT_SECRET",
     callbackURL: "https://example.com/auth/microsoft/callback",
   },
-  async (accessToken, _, extraParams, profile) => {
+  async ({ accessToken, _, extraParams, profile }) => {
     return User.findOrCreate({ email: profile.emails[0].value });
   }
 );
