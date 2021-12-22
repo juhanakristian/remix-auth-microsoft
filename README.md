@@ -1,37 +1,6 @@
-# Remix Auth - Strategy Template
+# MicrosoftStrategy
 
-> A template for creating a new Remix Auth strategy.
-
-If you want to create a new strategy for Remix Auth, you could use this as a template for your repository.
-
-The repo installs the latest version of Remix Auth and do the setup for you to have tests, linting and typechecking.
-
-## How to use it
-
-1. In the `package.json` change `name` to your strategy name, also add a description and ideally an author, repository and homepage keys.
-2. In `src/index.ts` change the `MyStrategy` for the strategy name you want to use.
-3. Implement the strategy flow inside the `authenticate` method. Use `this.success` and `this.failure` to correctly send finish the flow.
-4. In `tests/index.test.ts` change the tests to use your strategy and test it. Inside the tests you have access to `jest-fetch-mock` to mock any fetch you may need to do.
-5. Once you are ready, set the secrets on Github
-   - `NPM_TOKEN`: The token for the npm registry
-   - `GIT_USER_NAME`: The you want the bump workflow to use in the commit.
-   - `GIT_USER_EMAIL`: The email you want the bump workflow to use in the commit.
-
-## Scripts
-
-- `build`: Build the project for production using the TypeScript compiler (strips the types).
-- `typecheck`: Check the project for type errors, this also happens in build but it's useful to do in development.
-- `lint`: Runs ESLint againt the source codebase to ensure it pass the linting rules.
-- `test`: Runs all the test using Jest.
-
-## Documentations
-
-To facilitae creating a documentation for your strategy, you can use the following Markdown
-
-```markdown
-# Strategy Name
-
-<!-- Description -->
+The Microsoft strategy is used to authenticate users against a [Microsoft Identity](https://docs.microsoft.com/en-us/azure/active-directory/develop/) account. This can be a work/school account or a personal Microsoft account, like Skype, Xbox and Outlook.com. It extends the OAuth2Strategy.
 
 ## Supported runtimes
 
@@ -40,9 +9,89 @@ To facilitae creating a documentation for your strategy, you can use the followi
 | Node.js    | ✅          |
 | Cloudflare | ✅          |
 
-<!-- If it doesn't support one runtime, explain here why -->
-
 ## How to use
 
-<!-- Explain how to use the strategy, here you should tell what options it expects from the developer when instantiating the strategy -->
+### Create an OAuth application
+
+Follow the steps on [the Microsoft documentation](https://docs.microsoft.com/en-us/azure/active-directory/develop/quickstart-register-app) to create a new App Registration. You should select **Web** as the platform, configure a **Redirect URI** and add a client secret.
+
+    If you want to support login with both personal Microsoft accounts and school/work accounts, you might need to configure the supported account types by editing the manifest file. Set `signInAudience` value to `MicrosoftADandPersonalMicrosoftAccount` to allow login also with personal accounts.
+
+Be sure to copy the client secret, Redirect URI and the Application (client) ID (under Overview) because you will need them later.
+
+### Create the strategy instance
+
+```ts
+import { MicrosoftStrategy } from "remix-auth";
+
+let microsoftStrategy = new MicrosoftStrategy(
+  {
+    clientID: "YOUR_CLIENT_ID",
+    clientSecret: "YOUR_CLIENT_SECRET",
+    callbackURL: "https://example.com/auth/microsoft/callback",
+  },
+  async (accessToken, _, extraParams, profile) => {
+    return User.findOrCreate({ email: profile.emails[0].value });
+  }
+);
+
+authenticator.use(microsoftStrategy);
+```
+
+### Setup your routes
+
+```tsx
+// app/routes/login.tsx
+export default function Login() {
+  return (
+    <Form action="/auth/microsoft" method="post">
+      <button>Login with Microsoft</button>
+    </Form>
+  );
+}
+```
+
+```tsx
+// app/routes/auth/microsoft.tsx
+import { ActionFunction, LoaderFunction } from "remix";
+import { authenticator } from "~/auth.server";
+
+export let loader: LoaderFunction = () => redirect("/login");
+
+export let action: ActionFunction = ({ request }) => {
+  return authenticator.authenticate("microsoft", request);
+};
+```
+
+```tsx
+// app/routes/auth/microsoft/callback.tsx
+import { ActionFunction, LoaderFunction } from "remix";
+import { authenticator } from "~/auth.server";
+
+export let loader: LoaderFunction = ({ request }) => {
+  return authenticator.authenticate("microsoft", request, {
+    successRedirect: "/dashboard",
+    failureRedirect: "/login",
+  });
+};
+```
+
+### Allow login only with accounts from a single organization (tenant)
+
+If you want to allow login only for users from a single organization, you should add the `tenant` attribute to the configuration passed to `MicrosoftStrategy`. The value of `tenant` should be the **Directory (tenant) ID** found under **Overview** in your App Registration page.
+
+You must also select **Accounts in this organizational directory** as Supported account types in your App Registration.
+
+```ts
+let microsoftStrategy = new MicrosoftStrategy(
+  {
+    clientID: "YOUR_CLIENT_ID",
+    clientSecret: "YOUR_CLIENT_SECRET",
+    callbackURL: "https://example.com/auth/microsoft/callback",
+    tenant: "YOUR_TENANT_ID",
+  },
+  async (accessToken, _, extraParams, profile) => {
+    return User.findOrCreate({ email: profile.emails[0].value });
+  }
+);
 ```

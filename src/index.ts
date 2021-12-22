@@ -1,9 +1,4 @@
-import { SessionStorage } from "@remix-run/server-runtime";
-import {
-  AuthenticateOptions,
-  Strategy,
-  StrategyVerifyCallback,
-} from "remix-auth";
+import { StrategyVerifyCallback } from "remix-auth";
 
 import {
   OAuth2Profile,
