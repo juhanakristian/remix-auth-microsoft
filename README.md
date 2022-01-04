@@ -30,7 +30,7 @@ let microsoftStrategy = new MicrosoftStrategy(
     clientSecret: "YOUR_CLIENT_SECRET",
     callbackURL: "https://example.com/auth/microsoft/callback",
   },
-  async ({ accessToken, _, extraParams, profile }) => {
+  async ({ accessToken, extraParams, profile }) => {
     return User.findOrCreate({ email: profile.emails[0].value });
   }
 );
