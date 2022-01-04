@@ -43,7 +43,7 @@ export class MicrosoftStrategy<User> extends OAuth2Strategy<
   MicrosoftProfile,
   MicrosoftExtraParams
 > {
-  name = "azure";
+  name = "microsoft";
 
   private scope: string;
   private userInfoURL = "https://graph.microsoft.com/oidc/userinfo";
