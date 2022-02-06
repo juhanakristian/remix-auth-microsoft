@@ -31,6 +31,13 @@ let microsoftStrategy = new MicrosoftStrategy(
     callbackURL: "https://example.com/auth/microsoft/callback",
   },
   async ({ accessToken, extraParams, profile }) => {
+    // Here you can fetch the user from database or return a user object based on profile
+    // return {profile}
+    // The returned object is stored in the session storage you are using by the authenticator
+
+    // If you're using cookieSessionStorage, be aware that cookies have a size limit of 4kb
+    // For example this won't work
+    // return {accessToken, extraParams, profile}
     return User.findOrCreate({ email: profile.emails[0].value });
   }
 );
