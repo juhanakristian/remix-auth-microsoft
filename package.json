@@ -54,5 +54,14 @@
   "dependencies": {
     "remix-auth": "^3.0.0",
     "remix-auth-oauth2": "^1.0.0"
+  },
+  "author": "Juhana Jauhiainen <juhana.jauhiainen@gmail.com>",
+  "bugs": {
+    "url": "https://github.com/juhanakristian/remix-auth-microsoft/issues"
+  },
+  "homepage": "https://github.com/juhanakristian/remix-auth-microsoft#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/juhanakristian/remix-auth-microsoft.git"
   }
 }
