@@ -29,6 +29,8 @@ let microsoftStrategy = new MicrosoftStrategy(
     clientID: "YOUR_CLIENT_ID",
     clientSecret: "YOUR_CLIENT_SECRET",
     callbackURL: "https://example.com/auth/microsoft/callback",
+    scope: "openid profile email", // optional
+    prompt: "login", // optional
   },
   async ({ accessToken, extraParams, profile }) => {
     // Here you can fetch the user from database or return a user object based on profile
@@ -44,6 +46,8 @@ let microsoftStrategy = new MicrosoftStrategy(
 
 authenticator.use(microsoftStrategy);
 ```
+
+See [Microsoft docs](https://docs.microsoft.com/en-us/azure/active-directory/develop/v2-oauth2-auth-code-flow) for more information on `scope` and `prompt` parameters.
 
 ### Setup your routes
 

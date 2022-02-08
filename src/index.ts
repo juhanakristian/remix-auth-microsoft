@@ -12,6 +12,7 @@ export interface MicrosoftStrategyOptions {
   callbackURL: string;
   scope?: string;
   tenant?: string;
+  prompt?: string;
 }
 
 export interface MicrosoftProfile extends OAuth2Profile {
@@ -46,6 +47,7 @@ export class MicrosoftStrategy<User> extends OAuth2Strategy<
   name = "microsoft";
 
   private scope: string;
+  private prompt: string;
   private userInfoURL = "https://graph.microsoft.com/oidc/userinfo";
 
   constructor(
@@ -54,6 +56,7 @@ export class MicrosoftStrategy<User> extends OAuth2Strategy<
       clientSecret,
       callbackURL,
       scope,
+      prompt,
       tenant = "common",
     }: MicrosoftStrategyOptions,
     verify: StrategyVerifyCallback<
@@ -72,11 +75,13 @@ export class MicrosoftStrategy<User> extends OAuth2Strategy<
       verify
     );
     this.scope = scope ?? "openid profile email";
+    this.prompt = prompt ?? "none";
   }
 
   protected authorizationParams() {
     return new URLSearchParams({
       scope: this.scope,
+      prompt: this.prompt,
     });
   }
 
