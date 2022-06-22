@@ -30,7 +30,6 @@ let microsoftStrategy = new MicrosoftStrategy(
     clientSecret: "YOUR_CLIENT_SECRET",
     callbackURL: "https://example.com/auth/microsoft/callback",
     scope: "openid profile email", // optional
-    prompt: "login", // optional
   },
   async ({ accessToken, extraParams, profile }) => {
     // Here you can fetch the user from database or return a user object based on profile
