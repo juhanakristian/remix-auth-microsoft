@@ -14,9 +14,9 @@ describe(MicrosoftStrategy, () => {
   test("should allow changing the scope", async () => {
     let strategy = new MicrosoftStrategy(
       {
-        clientID: "CLIENT_ID",
+        clientId: "CLIENT_ID",
         clientSecret: "CLIENT_SECRET",
-        callbackURL: "https://example.app/callback",
+        redirectUri: "https://example.app/callback",
         scope: "custom",
       },
       verify
@@ -43,9 +43,9 @@ describe(MicrosoftStrategy, () => {
   test("should have the scope `openid profile email` as default", async () => {
     let strategy = new MicrosoftStrategy(
       {
-        clientID: "CLIENT_ID",
+        clientId: "CLIENT_ID",
         clientSecret: "CLIENT_SECRET",
-        callbackURL: "https://example.app/callback",
+        redirectUri: "https://example.app/callback",
       },
       verify
     );
@@ -73,9 +73,9 @@ describe(MicrosoftStrategy, () => {
   test("should correctly format the authorization URL", async () => {
     let strategy = new MicrosoftStrategy(
       {
-        clientID: "CLIENT_ID",
+        clientId: "CLIENT_ID",
         clientSecret: "CLIENT_SECRET",
-        callbackURL: "https://example.app/callback",
+        redirectUri: "https://example.app/callback",
       },
       verify
     );
@@ -103,9 +103,9 @@ describe(MicrosoftStrategy, () => {
   test("should allow changing tenant", async () => {
     let strategy = new MicrosoftStrategy(
       {
-        clientID: "CLIENT_ID",
+        clientId: "CLIENT_ID",
         clientSecret: "CLIENT_SECRET",
-        callbackURL: "https://example.app/callback",
+        redirectUri: "https://example.app/callback",
         tenant: "custom",
       },
       verify
