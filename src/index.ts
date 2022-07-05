@@ -11,7 +11,7 @@ export interface MicrosoftStrategyOptions {
   clientSecret: string;
   redirectUri: string;
   scope?: string;
-  tenant?: string;
+  tenantId?: string;
   prompt?: string;
 }
 
@@ -57,7 +57,7 @@ export class MicrosoftStrategy<User> extends OAuth2Strategy<
       redirectUri,
       scope,
       prompt,
-      tenant = "common",
+      tenantId = "common",
     }: MicrosoftStrategyOptions,
     verify: StrategyVerifyCallback<
       User,
@@ -69,8 +69,8 @@ export class MicrosoftStrategy<User> extends OAuth2Strategy<
         clientID: clientId,
         clientSecret,
         callbackURL: redirectUri,
-        authorizationURL: `https://login.microsoftonline.com/${tenant}/oauth2/v2.0/authorize`,
-        tokenURL: `https://login.microsoftonline.com/${tenant}/oauth2/v2.0/token`,
+        authorizationURL: `https://login.microsoftonline.com/${tenantId}/oauth2/v2.0/authorize`,
+        tokenURL: `https://login.microsoftonline.com/${tenantId}/oauth2/v2.0/token`,
       },
       verify
     );

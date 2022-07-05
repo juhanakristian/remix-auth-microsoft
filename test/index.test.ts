@@ -106,7 +106,7 @@ describe(MicrosoftStrategy, () => {
         clientId: "CLIENT_ID",
         clientSecret: "CLIENT_SECRET",
         redirectUri: "https://example.app/callback",
-        tenant: "custom",
+        tenantId: "custom",
       },
       verify
     );
