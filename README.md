@@ -1,6 +1,7 @@
-# MicrosoftStrategy
+# MicrosoftStrategy for [Remix](https://remix.run/) using [Remix-Auth](https://github.com/sergiodxa/remix-auth)
 
-The Microsoft strategy is used to authenticate users against a [Microsoft Identity](https://docs.microsoft.com/en-us/azure/active-directory/develop/) account. This can be a work/school account or a personal Microsoft account, like Skype, Xbox and Outlook.com. It extends the OAuth2Strategy.
+The Microsoft strategy is used to authenticate users against an account on [Microsoft Active Directory](https://docs.microsoft.com/en-us/azure/active-directory/develop/) using [Remix-Auth](https://github.com/sergiodxa/remix-auth).
+This can be a work/school account or a personal Microsoft account, like Skype, Xbox and Outlook.com. It extends the OAuth2Strategy.
 
 ## Supported runtimes
 
@@ -17,18 +18,32 @@ Follow the steps on [the Microsoft documentation](https://docs.microsoft.com/en-
 
     If you want to support login with both personal Microsoft accounts and school/work accounts, you might need to configure the supported account types by editing the manifest file. Set `signInAudience` value to `MicrosoftADandPersonalMicrosoftAccount` to allow login also with personal accounts.
 
-Be sure to copy the client secret, Redirect URI and the Application (client) ID (under Overview) because you will need them later.
+Change your redirect URI to `https://example.com/auth/microsoft/callback` or `http://localhost:4200/auth/microsoft/callback` if you run it locally.
+
+Be sure to copy the client secret, redirect URI, Tenant ID and the Application (client) ID (under Overview) because you will need them later.
+
+### Install dependencies
+
+```bash
+npm install remix-auth-microsoft remix-auth remix-auth-oauth2 @remix-run/server-runtime
+```
 
 ### Create the strategy instance
 
 ```ts
+// app/services/auth.server.ts
 import { MicrosoftStrategy } from "remix-auth-microsoft";
+import { Authenticator } from "remix-auth";
+import { sessionStorage } from "~/services/session.server";
+
+export let authenticator = new Authenticator<User>(sessionStorage); //User is a custom user types you can define as you want
 
 let microsoftStrategy = new MicrosoftStrategy(
   {
-    clientID: "YOUR_CLIENT_ID",
+    clientId: "YOUR_CLIENT_ID",
     clientSecret: "YOUR_CLIENT_SECRET",
-    callbackURL: "https://example.com/auth/microsoft/callback",
+    redirectUri: "https://example.com/auth/microsoft/callback",
+    tenantId: "YOUR_TENANT_ID", // optional - necessary for organization without multitenant (see below)
     scope: "openid profile email", // optional
     prompt: "login", // optional
   },
@@ -49,37 +64,45 @@ authenticator.use(microsoftStrategy);
 
 See [Microsoft docs](https://docs.microsoft.com/en-us/azure/active-directory/develop/v2-oauth2-auth-code-flow) for more information on `scope` and `prompt` parameters.
 
+### Applications with single-tenant authentication (no multitenant allowed)
+
+If you want to allow login only for users from a single organization, you should add the `tenantId` attribute to the configuration passed to `MicrosoftStrategy`.
+The value of `tenantId` should be the **Directory (tenant) ID** found under **Overview** in your App Registration page.
+
+You must also select **Accounts in this organizational directory** as Supported account types in your App Registration.
+
 ### Setup your routes
 
 ```tsx
 // app/routes/login.tsx
 export default function Login() {
   return (
-    <Form action="/auth/microsoft" method="post">
+    <form action="/auth/microsoft" method="post">
       <button>Login with Microsoft</button>
-    </Form>
+    </form>
   );
 }
 ```
 
 ```tsx
 // app/routes/auth/microsoft.tsx
-import { ActionFunction, LoaderFunction } from "remix";
+import type { ActionFunction, LoaderFunction } from "@remix-run/node";
 import { authenticator } from "~/auth.server";
+import { redirect } from "@remix-run/node";
 
-export let loader: LoaderFunction = () => redirect("/login");
+export const loader: LoaderFunction = () => redirect("/login");
 
-export let action: ActionFunction = ({ request }) => {
+export const action: ActionFunction = ({ request }) => {
   return authenticator.authenticate("microsoft", request);
 };
 ```
 
-```tsx
+```ts
 // app/routes/auth/microsoft/callback.tsx
-import { ActionFunction, LoaderFunction } from "remix";
+import type { LoaderFunction } from "@remix-run/node";
 import { authenticator } from "~/auth.server";
 
-export let loader: LoaderFunction = ({ request }) => {
+export const loader: LoaderFunction = ({ request }) => {
   return authenticator.authenticate("microsoft", request, {
     successRedirect: "/dashboard",
     failureRedirect: "/login",
@@ -87,22 +110,22 @@ export let loader: LoaderFunction = ({ request }) => {
 };
 ```
 
-### Allow login only with accounts from a single organization (tenant)
-
-If you want to allow login only for users from a single organization, you should add the `tenant` attribute to the configuration passed to `MicrosoftStrategy`. The value of `tenant` should be the **Directory (tenant) ID** found under **Overview** in your App Registration page.
-
-You must also select **Accounts in this organizational directory** as Supported account types in your App Registration.
+### Add Session Storage
 
 ```ts
-let microsoftStrategy = new MicrosoftStrategy(
-  {
-    clientID: "YOUR_CLIENT_ID",
-    clientSecret: "YOUR_CLIENT_SECRET",
-    callbackURL: "https://example.com/auth/microsoft/callback",
-    tenant: "YOUR_TENANT_ID",
+// app/services/session.server.ts
+import { createCookieSessionStorage } from "@remix-run/node";
+
+export let sessionStorage = createCookieSessionStorage({
+  cookie: {
+    name: "_session", // use any name you want here
+    sameSite: "lax", // this helps with CSRF
+    path: "/", // remember to add this so the cookie will work in all routes
+    httpOnly: true, // for security reasons, make this cookie http only
+    secrets: ["s3cr3t"], // replace this with an actual secret
+    secure: process.env.NODE_ENV === "production", // enable this in prod only
   },
-  async (accessToken, _, extraParams, profile) => {
-    return User.findOrCreate({ email: profile.emails[0].value });
-  }
-);
+});
+
+export let { getSession, commitSession, destroySession } = sessionStorage;
 ```

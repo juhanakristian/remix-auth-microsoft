@@ -7,11 +7,11 @@ import {
 } from "remix-auth-oauth2";
 
 export interface MicrosoftStrategyOptions {
-  clientID: string;
+  clientId: string;
   clientSecret: string;
-  callbackURL: string;
+  redirectUri: string;
   scope?: string;
-  tenant?: string;
+  tenantId?: string;
   prompt?: string;
 }
 
@@ -52,12 +52,12 @@ export class MicrosoftStrategy<User> extends OAuth2Strategy<
 
   constructor(
     {
-      clientID,
+      clientId,
       clientSecret,
-      callbackURL,
+      redirectUri,
       scope,
       prompt,
-      tenant = "common",
+      tenantId = "common",
     }: MicrosoftStrategyOptions,
     verify: StrategyVerifyCallback<
       User,
@@ -66,11 +66,11 @@ export class MicrosoftStrategy<User> extends OAuth2Strategy<
   ) {
     super(
       {
-        clientID,
+        clientID: clientId,
         clientSecret,
-        callbackURL,
-        authorizationURL: `https://login.microsoftonline.com/${tenant}/oauth2/v2.0/authorize`,
-        tokenURL: `https://login.microsoftonline.com/${tenant}/oauth2/v2.0/token`,
+        callbackURL: redirectUri,
+        authorizationURL: `https://login.microsoftonline.com/${tenantId}/oauth2/v2.0/authorize`,
+        tokenURL: `https://login.microsoftonline.com/${tenantId}/oauth2/v2.0/token`,
       },
       verify
     );
