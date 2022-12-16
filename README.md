@@ -25,7 +25,7 @@ Be sure to copy the client secret, redirect URI, Tenant ID and the Application (
 ### Install dependencies
 
 ```bash
-npm install remix-auth-microsoft remix-auth remix-auth-oauth2 @remix-run/server-runtime
+npm install remix-auth-microsoft remix-auth remix-auth-oauth2
 ```
 
 ### Create the strategy instance
@@ -86,23 +86,23 @@ export default function Login() {
 
 ```tsx
 // app/routes/auth/microsoft.tsx
-import type { ActionFunction, LoaderFunction } from "@remix-run/node";
+import type { ActionArgs } from "@remix-run/node";
 import { authenticator } from "~/auth.server";
 import { redirect } from "@remix-run/node";
 
-export const loader: LoaderFunction = () => redirect("/login");
+export const loader = () => redirect("/login");
 
-export const action: ActionFunction = ({ request }) => {
+export const action = ({ request }: ActionArgs) => {
   return authenticator.authenticate("microsoft", request);
 };
 ```
 
 ```ts
 // app/routes/auth/microsoft/callback.tsx
-import type { LoaderFunction } from "@remix-run/node";
+import type { LoaderArgs } from "@remix-run/node";
 import { authenticator } from "~/auth.server";
 
-export const loader: LoaderFunction = ({ request }) => {
+export const loader = ({ request }: LoaderArgs) => {
   return authenticator.authenticate("microsoft", request, {
     successRedirect: "/dashboard",
     failureRedirect: "/login",
