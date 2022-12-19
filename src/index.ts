@@ -57,7 +57,7 @@ export class MicrosoftStrategy<User> extends OAuth2Strategy<
   MicrosoftProfile,
   MicrosoftExtraParams
 > {
-  name = "MicrosoftStrategyDefaultName";
+  name = MicrosoftStrategyDefaultName;
 
   private scope: MicrosoftScope[];
   private prompt: string;
