@@ -6,11 +6,20 @@ import {
   OAuth2StrategyVerifyParams,
 } from "remix-auth-oauth2";
 
+/**
+ * @see https://learn.microsoft.com/en-us/azure/active-directory/develop/scopes-oidc#openid-connect-scopes
+ */
+export type MicrosoftScope =
+    | 'openid'
+    | 'email'
+    | 'profile'
+    | 'offline_access'
+
 export interface MicrosoftStrategyOptions {
   clientId: string;
   clientSecret: string;
   redirectUri: string;
-  scope?: string;
+  scope?: MicrosoftScope[] | string;
   tenantId?: string;
   prompt?: string;
 }
@@ -39,14 +48,18 @@ export interface MicrosoftExtraParams extends Record<string, string | number> {
   id_token: string;
 }
 
+export const MicrosoftStrategyDefaultScopes: MicrosoftScope[] = ['openid', 'profile', 'email'];
+export const MicrosoftStrategyDefaultName = 'microsoft';
+export const MicrosoftStrategyScopeSeperator = ' ';
+
 export class MicrosoftStrategy<User> extends OAuth2Strategy<
   User,
   MicrosoftProfile,
   MicrosoftExtraParams
 > {
-  name = "microsoft";
+  name = "MicrosoftStrategyDefaultName";
 
-  private scope: string;
+  private scope: MicrosoftScope[];
   private prompt: string;
   private userInfoURL = "https://graph.microsoft.com/oidc/userinfo";
 
@@ -74,13 +87,25 @@ export class MicrosoftStrategy<User> extends OAuth2Strategy<
       },
       verify
     );
-    this.scope = scope ?? "openid profile email";
+
+    this.scope = this.getScope(scope);
     this.prompt = prompt ?? "none";
+  }
+
+  //Allow users the option to pass a scope string, or typed array
+  private getScope(scope: MicrosoftStrategyOptions["scope"]) {
+    if (!scope) {
+      return MicrosoftStrategyDefaultScopes;
+    } else if (typeof scope === "string") {
+      return scope.split(MicrosoftStrategyScopeSeperator) as MicrosoftScope[];
+    }
+
+    return scope;
   }
 
   protected authorizationParams() {
     return new URLSearchParams({
-      scope: this.scope,
+      scope: this.scope.join(MicrosoftStrategyScopeSeperator),
       prompt: this.prompt,
     });
   }
@@ -94,7 +119,7 @@ export class MicrosoftStrategy<User> extends OAuth2Strategy<
     let data: MicrosoftProfile["_json"] = await response.json();
 
     let profile: MicrosoftProfile = {
-      provider: "microsoft",
+      provider: MicrosoftStrategyDefaultName,
       displayName: data.name,
       id: data.sub,
       name: {
