@@ -9,11 +9,7 @@ import {
 /**
  * @see https://learn.microsoft.com/en-us/azure/active-directory/develop/scopes-oidc#openid-connect-scopes
  */
-export type MicrosoftScope =
-    | 'openid'
-    | 'email'
-    | 'profile'
-    | 'offline_access'
+export type MicrosoftScope = "openid" | "email" | "profile" | "offline_access";
 
 export interface MicrosoftStrategyOptions {
   clientId: string;
@@ -48,9 +44,13 @@ export interface MicrosoftExtraParams extends Record<string, string | number> {
   id_token: string;
 }
 
-export const MicrosoftStrategyDefaultScopes: MicrosoftScope[] = ['openid', 'profile', 'email'];
-export const MicrosoftStrategyDefaultName = 'microsoft';
-export const MicrosoftStrategyScopeSeperator = ' ';
+export const MicrosoftStrategyDefaultScopes: MicrosoftScope[] = [
+  "openid",
+  "profile",
+  "email",
+];
+export const MicrosoftStrategyDefaultName = "microsoft";
+export const MicrosoftStrategyScopeSeperator = " ";
 
 export class MicrosoftStrategy<User> extends OAuth2Strategy<
   User,
@@ -111,14 +111,14 @@ export class MicrosoftStrategy<User> extends OAuth2Strategy<
   }
 
   protected async userProfile(accessToken: string): Promise<MicrosoftProfile> {
-    let response = await fetch(this.userInfoURL, {
+    const response = await fetch(this.userInfoURL, {
       headers: {
         Authorization: `Bearer ${accessToken}`,
       },
     });
-    let data: MicrosoftProfile["_json"] = await response.json();
+    const data: MicrosoftProfile["_json"] = await response.json();
 
-    let profile: MicrosoftProfile = {
+    const profile: MicrosoftProfile = {
       provider: MicrosoftStrategyDefaultName,
       displayName: data.name,
       id: data.sub,
