@@ -3,6 +3,7 @@
     "lib": ["DOM", "DOM.Iterable", "ES2019"],
     "esModuleInterop": true,
     "moduleResolution": "Node",
+    "resolveJsonModule": true,
     "module": "CommonJS",
     "target": "ES2019",
     "strict": true,
