@@ -6,10 +6,7 @@ import {
   OAuth2StrategyVerifyParams,
 } from "remix-auth-oauth2";
 
-/**
- * @see https://learn.microsoft.com/en-us/azure/active-directory/develop/scopes-oidc#openid-connect-scopes
- */
-export type MicrosoftScope = "openid" | "email" | "profile" | "offline_access";
+import { MicrosoftScope } from "./scopes";
 
 export interface MicrosoftStrategyOptions {
   clientId: string;
@@ -61,7 +58,7 @@ export class MicrosoftStrategy<User> extends OAuth2Strategy<
 
   private scope: MicrosoftScope[];
   private prompt: string;
-  private userInfoURL = "https://graph.microsoft.com/oidc/userinfo";
+  private apiURL = "https://graph.microsoft.com/v1.0/me";
 
   constructor(
     {
@@ -111,7 +108,7 @@ export class MicrosoftStrategy<User> extends OAuth2Strategy<
   }
 
   protected async userProfile(accessToken: string): Promise<MicrosoftProfile> {
-    const response = await fetch(this.userInfoURL, {
+    const response = await fetch(this.apiURL, {
       headers: {
         Authorization: `Bearer ${accessToken}`,
       },
