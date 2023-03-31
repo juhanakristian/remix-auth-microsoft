@@ -87,7 +87,7 @@ export default function Login() {
 ```tsx
 // app/routes/auth/microsoft.tsx
 import type { ActionArgs } from "@remix-run/node";
-import { authenticator } from "~/auth.server";
+import { authenticator } from "~/services/auth.server";
 import { redirect } from "@remix-run/node";
 
 export const loader = () => redirect("/login");
@@ -100,7 +100,7 @@ export const action = ({ request }: ActionArgs) => {
 ```ts
 // app/routes/auth/microsoft/callback.tsx
 import type { LoaderArgs } from "@remix-run/node";
-import { authenticator } from "~/auth.server";
+import { authenticator } from "~/services/auth.server";
 
 export const loader = ({ request }: LoaderArgs) => {
   return authenticator.authenticate("microsoft", request, {
