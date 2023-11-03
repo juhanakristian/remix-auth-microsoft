@@ -95,7 +95,9 @@ export class MicrosoftStrategy<User> extends OAuth2Strategy<
   //Allow users the option to pass a scope string, or typed array
   private getScope(scope: MicrosoftStrategyOptions["scope"]) {
     if (!scope) {
-      return MicrosoftStrategyDefaultScopes.join(MicrosoftStrategyScopeSeperator);
+      return MicrosoftStrategyDefaultScopes.join(
+        MicrosoftStrategyScopeSeperator
+      );
     } else if (typeof scope === "string") {
       return scope;
     }
