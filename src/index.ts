@@ -18,6 +18,9 @@ export interface MicrosoftStrategyOptions {
   scope?: MicrosoftScope[] | string;
   tenantId?: string;
   prompt?: string;
+  domain?: string;
+  policy?: string;
+  userInfoURL?: string;
 }
 
 export interface MicrosoftProfile extends OAuth2Profile {
@@ -61,7 +64,7 @@ export class MicrosoftStrategy<User> extends OAuth2Strategy<
 
   scope: string;
   private prompt: string;
-  private userInfoURL = "https://graph.microsoft.com/oidc/userinfo";
+  private userInfoURL: string;
 
   constructor(
     {
@@ -71,6 +74,9 @@ export class MicrosoftStrategy<User> extends OAuth2Strategy<
       scope,
       prompt,
       tenantId = "common",
+      domain = "login.microsoftonline.com",
+      policy,
+      userInfoURL = "https://graph.microsoft.com/oidc/userinfo",
     }: MicrosoftStrategyOptions,
     verify: StrategyVerifyCallback<
       User,
@@ -82,14 +88,19 @@ export class MicrosoftStrategy<User> extends OAuth2Strategy<
         clientID: clientId,
         clientSecret,
         callbackURL: redirectUri,
-        authorizationURL: `https://login.microsoftonline.com/${tenantId}/oauth2/v2.0/authorize`,
-        tokenURL: `https://login.microsoftonline.com/${tenantId}/oauth2/v2.0/token`,
+        authorizationURL: policy
+          ? `https://${domain}/${tenantId}/${policy}/oauth2/v2.0/authorize`
+          : `https://${domain}/${tenantId}/oauth2/v2.0/authorize`,
+        tokenURL: policy
+          ? `https://${domain}/${tenantId}/${policy}/oauth2/v2.0/token`
+          : `https://${domain}/${tenantId}/oauth2/v2.0/token`,
       },
       verify
     );
 
     this.scope = this.getScope(scope);
     this.prompt = prompt ?? "none";
+    this.userInfoURL = userInfoURL;
   }
 
   //Allow users the option to pass a scope string, or typed array
