@@ -111,6 +111,7 @@ export class MicrosoftStrategy<User> extends OAuth2Strategy<
     });
   }
 
+  protected async userProfile(accessToken: string, extraParams: MicrosoftExtraParams): Promise<MicrosoftProfile>;
   protected async userProfile(accessToken: string): Promise<MicrosoftProfile> {
     const response = await fetch(this.userInfoURL, {
       headers: {
