@@ -107,14 +107,6 @@ export class MicrosoftStrategy<User> extends OAuth2Strategy<
     return scope.join(MicrosoftStrategyScopeSeperator);
   }
 
-  protected authorizationParams(_params: URLSearchParams): URLSearchParams {
-    // TODO see what params are passed as arg here, might avoid needing the scope/prompt fields on this class
-    return new URLSearchParams({
-      scope: this.scope,
-      prompt: this.prompt,
-    });
-  }
-
   protected async userProfile({
     access_token,
   }: TokenResponseBody): Promise<MicrosoftProfile> {
