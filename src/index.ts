@@ -3,7 +3,9 @@ import { StrategyVerifyCallback } from "remix-auth";
 import {
   OAuth2Profile,
   OAuth2Strategy,
+  OAuth2StrategyOptions,
   OAuth2StrategyVerifyParams,
+  TokenResponseBody,
 } from "remix-auth-oauth2";
 
 /**
@@ -11,16 +13,16 @@ import {
  */
 export type MicrosoftScope = "openid" | "email" | "profile" | "offline_access";
 
-export interface MicrosoftStrategyOptions {
-  clientId: string;
-  clientSecret: string;
-  redirectUri: string;
-  scope?: MicrosoftScope[] | string;
+export interface MicrosoftStrategyOptions
+  extends Omit<
+    OAuth2StrategyOptions,
+    "authorizationEndpoint" | "tokenEndpoint" | "tokenRevocationEndpoint"
+  > {
   tenantId?: string;
   prompt?: string;
   domain?: string;
   policy?: string;
-  userInfoURL?: string;
+  userInfoEndpoint?: string;
 }
 
 export interface MicrosoftProfile extends OAuth2Profile {
@@ -61,50 +63,40 @@ export class MicrosoftStrategy<User> extends OAuth2Strategy<
   MicrosoftExtraParams
 > {
   name = MicrosoftStrategyDefaultName;
-
+  userInfoEndpoint: string;
   scope: string;
-  private prompt: string;
-  private userInfoURL: string;
+  prompt: string;
 
   constructor(
     {
-      clientId,
-      clientSecret,
-      redirectUri,
-      scope,
-      prompt,
       tenantId = "common",
       domain = "login.microsoftonline.com",
+      userInfoEndpoint = "https://graph.microsoft.com/oidc/userinfo",
       policy,
-      userInfoURL = "https://graph.microsoft.com/oidc/userinfo",
+      ...options
     }: MicrosoftStrategyOptions,
     verify: StrategyVerifyCallback<
       User,
       OAuth2StrategyVerifyParams<MicrosoftProfile, MicrosoftExtraParams>
     >
   ) {
-    super(
-      {
-        clientID: clientId,
-        clientSecret,
-        callbackURL: redirectUri,
-        authorizationURL: policy
-          ? `https://${domain}/${tenantId}/${policy}/oauth2/v2.0/authorize`
-          : `https://${domain}/${tenantId}/oauth2/v2.0/authorize`,
-        tokenURL: policy
-          ? `https://${domain}/${tenantId}/${policy}/oauth2/v2.0/token`
-          : `https://${domain}/${tenantId}/oauth2/v2.0/token`,
-      },
-      verify
-    );
+    const authorizationEndpoint = policy
+      ? `https://${domain}/${tenantId}/${policy}/oauth2/v2.0/authorize`
+      : `https://${domain}/${tenantId}/oauth2/v2.0/authorize`;
 
-    this.scope = this.getScope(scope);
-    this.prompt = prompt ?? "none";
-    this.userInfoURL = userInfoURL;
+    const tokenEndpoint = policy
+      ? `https://${domain}/${tenantId}/${policy}/oauth2/v2.0/token`
+      : `https://${domain}/${tenantId}/oauth2/v2.0/token`;
+
+    super({ authorizationEndpoint, tokenEndpoint, ...options }, verify);
+
+    this.userInfoEndpoint = userInfoEndpoint;
+    this.scope = this.getScope(options.scopes);
+    this.prompt = options.prompt ?? "none";
   }
 
   //Allow users the option to pass a scope string, or typed array
-  private getScope(scope: MicrosoftStrategyOptions["scope"]) {
+  private getScope(scope: MicrosoftStrategyOptions["scopes"]) {
     if (!scope) {
       return MicrosoftStrategyDefaultScopes.join(
         MicrosoftStrategyScopeSeperator
@@ -115,22 +107,23 @@ export class MicrosoftStrategy<User> extends OAuth2Strategy<
     return scope.join(MicrosoftStrategyScopeSeperator);
   }
 
-  protected authorizationParams() {
+  protected authorizationParams(_params: URLSearchParams): URLSearchParams {
+    // TODO see what params are passed as arg here, might avoid needing the scope/prompt fields on this class
     return new URLSearchParams({
       scope: this.scope,
       prompt: this.prompt,
     });
   }
 
-  protected async userProfile(accessToken: string, extraParams: MicrosoftExtraParams): Promise<MicrosoftProfile>;
-  protected async userProfile(accessToken: string): Promise<MicrosoftProfile> {
-    const response = await fetch(this.userInfoURL, {
+  protected async userProfile({
+    access_token,
+  }: TokenResponseBody): Promise<MicrosoftProfile> {
+    const response = await fetch(this.userInfoEndpoint, {
       headers: {
-        Authorization: `Bearer ${accessToken}`,
+        Authorization: `Bearer ${access_token}`,
       },
     });
     const data: MicrosoftProfile["_json"] = await response.json();
-
     const profile: MicrosoftProfile = {
       provider: MicrosoftStrategyDefaultName,
       displayName: data.name,
