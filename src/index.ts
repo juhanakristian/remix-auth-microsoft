@@ -60,7 +60,7 @@ export class MicrosoftStrategy<User> extends OAuth2Strategy<
   name = MicrosoftStrategyDefaultName;
 
   scope: string;
-  private prompt: string;
+  private prompt: string | undefined;
   private userInfoURL = "https://graph.microsoft.com/oidc/userinfo";
 
   constructor(
@@ -89,7 +89,7 @@ export class MicrosoftStrategy<User> extends OAuth2Strategy<
     );
 
     this.scope = this.getScope(scope);
-    this.prompt = prompt ?? "none";
+    this.prompt = prompt;
   }
 
   //Allow users the option to pass a scope string, or typed array
