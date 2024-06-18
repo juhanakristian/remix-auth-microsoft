@@ -55,12 +55,23 @@ let microsoftStrategy = new MicrosoftStrategy(
     // If you're using cookieSessionStorage, be aware that cookies have a size limit of 4kb
     // For example this won't work
     // return {accessToken, extraParams, profile}
-    return User.findOrCreate({ email: profile.emails[0].value });
+
+    // Retrieve or create user using id received from userinfo endpoint
+    // https://graph.microsoft.com/oidc/userinfo
+
+    // DO NOT USE EMAIL ADDRESS TO IDENTIFY USERS
+    // The email address received from Microsoft Entra ID is not validated and can be changed to anything from Azure Portal.
+    // If you use the email address to identify users and allow signing in from any tenant (`tenantId` is not set)
+    // it opens up a possibility of spoofing users!
+
+
+    return User.findOrCreate({ id: profile.id });
   }
 );
 
 authenticator.use(microsoftStrategy);
 ```
+
 
 See [Microsoft docs](https://docs.microsoft.com/en-us/azure/active-directory/develop/v2-oauth2-auth-code-flow) for more information on `scope` and `prompt` parameters.
 
