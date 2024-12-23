@@ -1,15 +1,6 @@
 import { OAuth2Strategy } from "remix-auth-oauth2";
 
 /**
- * @see https://learn.microsoft.com/en-us/azure/active-directory/develop/scopes-oidc#openid-connect-scopes
- */
-export type OpenIDConnectScope =
-  | "openid"
-  | "email"
-  | "profile"
-  | "offline_access";
-
-/**
  * @see https://learn.microsoft.com/en-us/entra/identity-platform/v2-oauth2-auth-code-flow
  */
 export type MicrosoftStrategyPrompt =
@@ -17,6 +8,15 @@ export type MicrosoftStrategyPrompt =
   | "none"
   | "consent"
   | "select_account";
+
+/**
+ * @see https://learn.microsoft.com/en-us/azure/active-directory/develop/scopes-oidc#openid-connect-scopes
+ */
+export type OpenIDConnectScope =
+  | "openid"
+  | "email"
+  | "profile"
+  | "offline_access";
 
 // eslint-disable-next-line @typescript-eslint/ban-types -- allow custom scopes
 export type MicrosoftStrategyScope = OpenIDConnectScope | (string & {});
