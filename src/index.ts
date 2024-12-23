@@ -9,6 +9,15 @@ export type OpenIDConnectScope =
   | "profile"
   | "offline_access";
 
+/**
+ * @see https://learn.microsoft.com/en-us/entra/identity-platform/v2-oauth2-auth-code-flow
+ */
+export type MicrosoftStrategyPrompt =
+  | "login"
+  | "none"
+  | "consent"
+  | "select_account";
+
 // eslint-disable-next-line @typescript-eslint/ban-types -- allow custom scopes
 export type MicrosoftStrategyScope = OpenIDConnectScope | (string & {});
 
@@ -18,7 +27,7 @@ export interface MicrosoftStrategyOptions {
   redirectURI: string;
   scopes?: MicrosoftStrategyScope[];
   tenantId?: string;
-  prompt?: string;
+  prompt?: MicrosoftStrategyPrompt;
 }
 
 export interface MicrosoftProfile {
