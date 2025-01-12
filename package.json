@@ -3,11 +3,12 @@
   "version": "2.0.1",
   "main": "./build/index.js",
   "types": "./build/index.d.ts",
+  "type": "module",
   "scripts": {
     "build": "tsc --project tsconfig.json",
     "typecheck": "tsc --project tsconfig.json --noEmit",
     "lint": "eslint --ext .ts,.tsx src/",
-    "test": "jest --config=config/jest.config.ts --passWithNoTests",
+    "test": "vitest --config config/vitest.config.ts run",
     "coverage": "npm run test -- --coverage"
   },
   "keywords": [
@@ -23,37 +24,20 @@
     "package.json",
     "README.md"
   ],
-  "peerDependencies": {
-    "@remix-run/server-runtime": "^1.0.0 || ^2.0.0"
-  },
   "devDependencies": {
-    "@babel/core": "^7.14.2",
-    "@babel/preset-env": "^7.14.1",
-    "@babel/preset-react": "^7.13.13",
-    "@babel/preset-typescript": "^7.13.0",
-    "@remix-run/node": "^1.0.3",
-    "@remix-run/react": "^1.1.1",
-    "@remix-run/server-runtime": "^1.0.0",
-    "@types/jest": "^26.0.23",
     "@typescript-eslint/eslint-plugin": "^6.9.1",
     "@typescript-eslint/parser": "^6.9.1",
-    "babel-jest": "^26.6.3",
+    "@vitest/coverage-v8": "^2.1.8",
     "eslint": "^8.52.0",
     "eslint-config-prettier": "^8.3.0",
-    "eslint-plugin-jest": "^27.6.0",
-    "eslint-plugin-jest-dom": "^5.1.0",
     "eslint-plugin-prettier": "^3.4.0",
     "eslint-plugin-unicorn": "^49.0.0",
-    "jest": "^26.6.3",
-    "jest-fetch-mock": "^3.0.3",
     "prettier": "^2.3.2",
-    "react": "^18.2.0",
-    "ts-node": "^9.1.1",
-    "typescript": "^5.1.6"
+    "typescript": "^5.1.6",
+    "vitest": "^2.1.8"
   },
   "dependencies": {
-    "remix-auth": "^3.6.0",
-    "remix-auth-oauth2": "^1.11.0"
+    "remix-auth-oauth2": "^3.2.0"
   },
   "author": "Juhana Jauhiainen <juhana.jauhiainen@gmail.com>",
   "bugs": {

@@ -1,23 +1,20 @@
-import { createCookieSessionStorage } from "@remix-run/server-runtime";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { MicrosoftStrategy } from "../src";
 
 describe(MicrosoftStrategy, () => {
-  let verify = jest.fn();
-  let sessionStorage = createCookieSessionStorage({
-    cookie: { secrets: ["s3cr3t"] },
-  });
+  let verify = vi.fn();
 
   beforeEach(() => {
-    jest.resetAllMocks();
+    vi.resetAllMocks();
   });
 
-  test("should allow changing the scope", async () => {
+  it("should allow changing the scope", async () => {
     let strategy = new MicrosoftStrategy(
       {
         clientId: "CLIENT_ID",
         clientSecret: "CLIENT_SECRET",
-        redirectUri: "https://example.app/callback",
-        scope: "custom",
+        redirectURI: "https://example.app/callback",
+        scopes: ["custom"],
       },
       verify
     );
@@ -25,9 +22,7 @@ describe(MicrosoftStrategy, () => {
     let request = new Request("https://example.app/auth/microsoft");
 
     try {
-      await strategy.authenticate(request, sessionStorage, {
-        sessionKey: "user",
-      });
+      await strategy.authenticate(request);
     } catch (error) {
       if (!(error instanceof Response)) throw error;
       let location = error.headers.get("Location");
@@ -40,12 +35,12 @@ describe(MicrosoftStrategy, () => {
     }
   });
 
-  test("should have the scope `openid profile email` as default", async () => {
+  it("should have the scope `openid profile email` as default", async () => {
     let strategy = new MicrosoftStrategy(
       {
         clientId: "CLIENT_ID",
         clientSecret: "CLIENT_SECRET",
-        redirectUri: "https://example.app/callback",
+        redirectURI: "https://example.app/callback",
       },
       verify
     );
@@ -53,9 +48,7 @@ describe(MicrosoftStrategy, () => {
     let request = new Request("https://example.app/auth/microsoft");
 
     try {
-      await strategy.authenticate(request, sessionStorage, {
-        sessionKey: "user",
-      });
+      await strategy.authenticate(request);
     } catch (error) {
       if (!(error instanceof Response)) throw error;
       let location = error.headers.get("Location");
@@ -70,12 +63,12 @@ describe(MicrosoftStrategy, () => {
     }
   });
 
-  test("should correctly format the authorization URL", async () => {
+  it("should correctly format the authorization URL", async () => {
     let strategy = new MicrosoftStrategy(
       {
         clientId: "CLIENT_ID",
         clientSecret: "CLIENT_SECRET",
-        redirectUri: "https://example.app/callback",
+        redirectURI: "https://example.app/callback",
       },
       verify
     );
@@ -83,9 +76,7 @@ describe(MicrosoftStrategy, () => {
     let request = new Request("https://example.app/auth/microsoft");
 
     try {
-      await strategy.authenticate(request, sessionStorage, {
-        sessionKey: "user",
-      });
+      await strategy.authenticate(request);
     } catch (error) {
       if (!(error instanceof Response)) throw error;
 
@@ -100,12 +91,12 @@ describe(MicrosoftStrategy, () => {
     }
   });
 
-  test("should allow changing tenant", async () => {
+  it("should allow changing tenant", async () => {
     let strategy = new MicrosoftStrategy(
       {
         clientId: "CLIENT_ID",
         clientSecret: "CLIENT_SECRET",
-        redirectUri: "https://example.app/callback",
+        redirectURI: "https://example.app/callback",
         tenantId: "custom",
       },
       verify
@@ -114,9 +105,7 @@ describe(MicrosoftStrategy, () => {
     let request = new Request("https://example.app/auth/microsoft");
 
     try {
-      await strategy.authenticate(request, sessionStorage, {
-        sessionKey: "user",
-      });
+      await strategy.authenticate(request);
     } catch (error) {
       if (!(error instanceof Response)) throw error;
 

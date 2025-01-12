@@ -1,26 +1,36 @@
-import { StrategyVerifyCallback } from "remix-auth";
+import { OAuth2Strategy } from "remix-auth-oauth2";
 
-import {
-  OAuth2Profile,
-  OAuth2Strategy,
-  OAuth2StrategyVerifyParams,
-} from "remix-auth-oauth2";
+/**
+ * @see https://learn.microsoft.com/en-us/entra/identity-platform/v2-oauth2-auth-code-flow
+ */
+export type MicrosoftStrategyPrompt =
+  | "login"
+  | "none"
+  | "consent"
+  | "select_account";
 
 /**
  * @see https://learn.microsoft.com/en-us/azure/active-directory/develop/scopes-oidc#openid-connect-scopes
  */
-export type MicrosoftScope = "openid" | "email" | "profile" | "offline_access";
+export type OpenIDConnectScope =
+  | "openid"
+  | "email"
+  | "profile"
+  | "offline_access";
+
+// eslint-disable-next-line @typescript-eslint/ban-types -- allow custom scopes
+export type MicrosoftStrategyScope = OpenIDConnectScope | (string & {});
 
 export interface MicrosoftStrategyOptions {
   clientId: string;
   clientSecret: string;
-  redirectUri: string;
-  scope?: MicrosoftScope[] | string;
+  redirectURI: string;
+  scopes?: MicrosoftStrategyScope[];
   tenantId?: string;
-  prompt?: string;
+  prompt?: MicrosoftStrategyPrompt;
 }
 
-export interface MicrosoftProfile extends OAuth2Profile {
+export interface MicrosoftProfile {
   id: string;
   displayName: string;
   name: {
@@ -37,82 +47,60 @@ export interface MicrosoftProfile extends OAuth2Profile {
   };
 }
 
-export interface MicrosoftExtraParams extends Record<string, string | number> {
-  expires_in: 3599;
-  token_type: "Bearer";
-  scope: string;
-  id_token: string;
-}
+const USER_INFO_URL = "https://graph.microsoft.com/oidc/userinfo";
 
-export const MicrosoftStrategyDefaultScopes: MicrosoftScope[] = [
+export const MicrosoftStrategyDefaultScopes: OpenIDConnectScope[] = [
   "openid",
   "profile",
   "email",
 ];
 export const MicrosoftStrategyDefaultName = "microsoft";
-export const MicrosoftStrategyScopeSeperator = " ";
+export const MicrosoftStrategyScopeSeparator = " ";
 
-export class MicrosoftStrategy<User> extends OAuth2Strategy<
-  User,
-  MicrosoftProfile,
-  MicrosoftExtraParams
-> {
-  name = MicrosoftStrategyDefaultName;
+export class MicrosoftStrategy<User> extends OAuth2Strategy<User> {
+  public name = MicrosoftStrategyDefaultName;
 
-  scope: string;
-  private prompt: string;
-  private userInfoURL = "https://graph.microsoft.com/oidc/userinfo";
+  private readonly prompt?: string;
+  private scopes: MicrosoftStrategyScope[];
 
   constructor(
     {
       clientId,
       clientSecret,
-      redirectUri,
-      scope,
+      redirectURI,
+      scopes = MicrosoftStrategyDefaultScopes,
       prompt,
       tenantId = "common",
     }: MicrosoftStrategyOptions,
-    verify: StrategyVerifyCallback<
-      User,
-      OAuth2StrategyVerifyParams<MicrosoftProfile, MicrosoftExtraParams>
-    >
+    verify: OAuth2Strategy<User>["verify"]
   ) {
     super(
       {
-        clientID: clientId,
+        clientId,
         clientSecret,
-        callbackURL: redirectUri,
-        authorizationURL: `https://login.microsoftonline.com/${tenantId}/oauth2/v2.0/authorize`,
-        tokenURL: `https://login.microsoftonline.com/${tenantId}/oauth2/v2.0/token`,
+        redirectURI,
+        authorizationEndpoint: `https://login.microsoftonline.com/${tenantId}/oauth2/v2.0/authorize`,
+        tokenEndpoint: `https://login.microsoftonline.com/${tenantId}/oauth2/v2.0/token`,
+        scopes,
       },
       verify
     );
 
-    this.scope = this.getScope(scope);
-    this.prompt = prompt ?? "none";
+    this.scopes = scopes;
+    this.prompt = prompt;
   }
 
-  //Allow users the option to pass a scope string, or typed array
-  private getScope(scope: MicrosoftStrategyOptions["scope"]) {
-    if (!scope) {
-      return MicrosoftStrategyDefaultScopes.join(
-        MicrosoftStrategyScopeSeperator
-      );
-    } else if (typeof scope === "string") {
-      return scope;
+  protected authorizationParams(params: URLSearchParams): URLSearchParams {
+    params.set("scope", this.scopes.join(MicrosoftStrategyScopeSeparator));
+    if (this.prompt) {
+      params.set("prompt", this.prompt);
     }
-    return scope.join(MicrosoftStrategyScopeSeperator);
+
+    return params;
   }
 
-  protected authorizationParams() {
-    return new URLSearchParams({
-      scope: this.scope,
-      prompt: this.prompt,
-    });
-  }
-
-  protected async userProfile(accessToken: string): Promise<MicrosoftProfile> {
-    const response = await fetch(this.userInfoURL, {
+  static async userProfile(accessToken: string): Promise<MicrosoftProfile> {
+    const response = await fetch(USER_INFO_URL, {
       headers: {
         Authorization: `Bearer ${accessToken}`,
       },
@@ -120,7 +108,6 @@ export class MicrosoftStrategy<User> extends OAuth2Strategy<
     const data: MicrosoftProfile["_json"] = await response.json();
 
     const profile: MicrosoftProfile = {
-      provider: MicrosoftStrategyDefaultName,
       displayName: data.name,
       id: data.sub,
       name: {

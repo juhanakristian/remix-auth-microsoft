@@ -10,10 +10,10 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Use Node 16
+      - name: Use Node 22
         uses: actions/setup-node@v4
         with:
-          node-version: 16
+          node-version: 22
 
       - name: Install dependencies
         uses: bahmutov/npm-install@v1
@@ -28,10 +28,10 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Use Node 16
+      - name: Use Node 22
         uses: actions/setup-node@v4
         with:
-          node-version: 16
+          node-version: 22
 
       - name: Install dependencies
         uses: bahmutov/npm-install@v1
@@ -46,16 +46,16 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Use Node 16
+      - name: Use Node 22
         uses: actions/setup-node@v4
         with:
-          node-version: 16
+          node-version: 22
 
       - name: Install dependencies
         uses: bahmutov/npm-install@v1
 
       - name: Test
-        run: npm run test -- --ci --coverage --maxWorkers=2
+        run: npm run coverage
 
   lint:
     name: Linter
@@ -64,10 +64,10 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Use Node 16
+      - name: Use Node 22
         uses: actions/setup-node@v4
         with:
-          node-version: 16
+          node-version: 22
 
       - name: Install dependencies
         uses: bahmutov/npm-install@v1
