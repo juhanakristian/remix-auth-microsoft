@@ -1,6 +1,6 @@
 {
   "name": "remix-auth-microsoft",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "main": "./build/index.js",
   "types": "./build/index.d.ts",
   "type": "module",
